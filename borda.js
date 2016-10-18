@@ -51,7 +51,7 @@ var Clock = function(element) {
 	this.svgNS = element.namespaceURI;
 	this.element = element;
 
-	this._base = "sexagesimal";
+	this.base("sexagesimal");
 	this._radius = 50;
 
 	this.showHoursHand = true;
@@ -172,7 +172,7 @@ Clock.prototype.draw = function() {
 			break;
 		case "decimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([10, 20, 30, 40, 50, 60, 70, 80, 90, 00], 0.3, "minute");
+				this.drawNumbers([10, 20, 30, 40, 50, 60, 70, 80, 90, '00'], 0.3, "minute");
 			}
 			if (this.showMinutesTicks) {
 				this.drawTicks(100, 0.06, "minute");
