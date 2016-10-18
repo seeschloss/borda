@@ -1,15 +1,15 @@
-var Hand = function(element, radius) {
+var ClockHand = function(element, radius) {
 	this.element = element;
 	this.radius = radius;
 
 	var _currentDegrees = undefined;
 };
 
-Hand.prototype.setAngle = function(degrees) {
+ClockHand.prototype.setAngle = function(degrees) {
 	this.element.setAttribute('transform', "rotate(" + degrees + ", " + this.radius + ", " + this.radius + ")");
 };
 
-Hand.prototype.advanceTo = function(degrees) {
+ClockHand.prototype.advanceTo = function(degrees) {
 	if (degrees != this._currentDegrees) {
 		var difference = ((degrees+360) - this._currentDegrees) % 360;
 		// We need the real absolute difference in degrees, to allow
@@ -195,7 +195,7 @@ Clock.prototype.draw = function() {
 	hours.setAttribute("x2", this._radius);
 	hours.setAttribute("y2", this._radius);
 	this.element.appendChild(hours);
-	this.hours = new Hand(hours, this._radius);
+	this.hours = new ClockHand(hours, this._radius);
 
 	var minutes = document.createElementNS(this.svgNS, "line");
 	minutes.classList.add("minutes");
@@ -205,7 +205,7 @@ Clock.prototype.draw = function() {
 	minutes.setAttribute("x2", this._radius);
 	minutes.setAttribute("y2", this._radius);
 	this.element.appendChild(minutes);
-	this.minutes = new Hand(minutes, this._radius);
+	this.minutes = new ClockHand(minutes, this._radius);
 
 	if (this.showSecondsHand) {
 		var seconds = document.createElementNS(this.svgNS, "line");
@@ -216,7 +216,7 @@ Clock.prototype.draw = function() {
 		seconds.setAttribute("x2", this._radius);
 		seconds.setAttribute("y2", this._radius);
 		this.element.appendChild(seconds);
-		this.seconds = new Hand(seconds, this._radius);
+		this.seconds = new ClockHand(seconds, this._radius);
 	}
 
 	return this;
