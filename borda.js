@@ -355,12 +355,16 @@ Clock.prototype.adjustHands24 = function(time) {
 
 Clock.prototype.adjustHandsDecimal = function(time) {
 	var sexagesimalSeconds = (time.getTime() / 1000)
-		- (time.getTimezoneOffset() * 60);
+		+ 560.921;
+		// Paris meridian is exactly 9 minutes and 20.921
+		// seconds east of Greenwich, which is the reference
+		// for Unix time returned by time.getTime()
+
 	// Taking milliseconds into account is absolutely necessary
 	// here, as decimal seconds are slightly shorter than sexagesimal
 	// seconds. If we only have sexagesimal second precision, then
 	// the decimal seconds hand will sometimes skip a second, one out
-	// of eight ticks or so (because a decimal second is ~0.8 sexagesimal
+	// of eight ticks or so (a decimal second is ~0.8 sexagesimal
 	// seconds).
 
 	var decimalDay = (sexagesimalSeconds / (3600 * 24))
