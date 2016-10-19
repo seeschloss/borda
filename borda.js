@@ -75,6 +75,9 @@ Clock.prototype.base = function(_) {
 		case "sexagesimal":
 			this.digits([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 			break;
+		case "24":
+			this.digits([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 0]);
+			break;
 		case "decimal":
 			this.digits([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 			break;
@@ -168,6 +171,21 @@ Clock.prototype.draw = function() {
 			}
 			if (this.showHoursTicks) {
 				this.drawTicks(12, 0.08, "hour");
+			}
+			break;
+		case "24":
+			if (this.showMinutesDigits) {
+				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute");
+			}
+			if (this.showMinutesTicks) {
+				this.drawTicks(60, 0.06, "minute");
+			}
+
+			if (this.showHoursDigits) {
+				this.drawNumbers(this._digits, 0.175, "hour");
+			}
+			if (this.showHoursTicks) {
+				this.drawTicks(24, 0.08, "hour");
 			}
 			break;
 		case "decimal":
@@ -306,6 +324,35 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 	return this;
 };
 
+Clock.prototype.adjustHands24 = function(time) {
+	var sexagesimalSeconds = Math.floor(time.getTime() / 1000)
+		- (time.getTimezoneOffset() * 60);
+	// We need only seconds precision here, so the hand moves
+	// at one second intervals instead of continously. Using
+	// absolute time since epoch will prevent jumps due to CSS
+	// transitions around midnight.
+
+	var hours = sexagesimalSeconds / 3600;
+	var minutes = sexagesimalSeconds / 60;
+
+	if (this.hours) {
+		var hoursAngle = (hours % 24) / 24 * 360;
+		this.hours.advanceTo(hoursAngle);
+	}
+
+	if (this.minutes) {
+		var minutesAngle = (minutes % 60) / 60 * 360;
+		this.minutes.advanceTo(minutesAngle);
+	}
+
+	if (this.seconds) {
+		var secondsAngle = (sexagesimalSeconds % 60) / 60 * 360;
+		this.seconds.advanceTo(secondsAngle);
+	}
+
+	return this;
+};
+
 Clock.prototype.adjustHandsDecimal = function(time) {
 	var sexagesimalSeconds = (time.getTime() / 1000)
 		- (time.getTimezoneOffset() * 60);
@@ -349,6 +396,8 @@ Clock.prototype.adjustHands = function(time) {
 	switch (this._base) {
 		case "sexagesimal":
 			return this.adjustHandsSexagesimal(time);
+		case "24":
+			return this.adjustHands24(time);
 		case "decimal":
 			return this.adjustHandsDecimal(time);
 	}
