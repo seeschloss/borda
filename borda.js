@@ -414,3 +414,16 @@ Clock.prototype.start = function() {
 	return this;
 };
 
+Clock.prototype.stop = function() {
+	clearInterval(this.timer);
+	this.timer = undefined;
+
+	return this;
+};
+
+Clock.prototype.display = function(date) {
+	this.adjustHands(date);
+
+	return this;
+};
+
