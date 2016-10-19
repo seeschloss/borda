@@ -3,6 +3,8 @@ Borda is a JavaScript class for drawing animated SVG clocks, with enough paramet
 to allow customising the look of the clock while trying not to get in the way of
 CSS styling.
 
+The main goal of this library is to provide a usable widget for accurately calculating and displaying [French revolutionary decimal time](https://en.wikipedia.org/wiki/Decimal_time#France) hence the name [Borda](https://en.wikipedia.org/wiki/Jean-Charles_de_Borda), who is the man responsible for proposing this scheme (among other works on decimalisation of units) to the Convention where it was subsequently legally adopted on [5 October 1793](http://gallica.bnf.fr/ark:/12148/bpt6k9736905c/f465.item). It was however never widely used and was eventually abandonned in favour of the customary sexagesimal time.
+
 ## Usage ##
 
 <dl>
@@ -32,6 +34,7 @@ CSS styling.
   
   <dt>.display(Date)</dt>
   <dd>Displays time of given date on the clock.</dd>
+  <dd><i>Date</i> should be a JavaScript <code>Date</code> object.</dd>
 </dl>
 
 ### Parameters ###
