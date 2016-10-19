@@ -81,6 +81,9 @@ Clock.prototype.base = function(_) {
 		case "decimal":
 			this.digits([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 			break;
+		case "hexadecimal":
+			this.digits([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0]);
+			break;
 	}
 
 	return this;
@@ -201,6 +204,21 @@ Clock.prototype.draw = function() {
 			}
 			if (this.showHoursTicks) {
 				this.drawTicks(10, 0.08, "hour");
+			}
+			break;
+		case "hexadecimal":
+			if (this.showMinutesDigits) {
+				this.drawNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0], 0.3, "minute");
+			}
+			if (this.showMinutesTicks) {
+				this.drawTicks(128, 0.06, "minute");
+			}
+
+			if (this.showHoursDigits) {
+				this.drawNumbers(this._digits, 0.175, "hour");
+			}
+			if (this.showHoursTicks) {
+				this.drawTicks(16, 0.08, "hour");
 			}
 			break;
 	}
@@ -396,6 +414,45 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 	return this;
 };
 
+Clock.prototype.adjustHandsHexadecimal = function(time) {
+	var sexagesimalSeconds = (time.getTime() / 1000)
+		- (time.getTimezoneOffset() * 60);
+
+	// Taking milliseconds into account is absolutely necessary
+	// here, as hexadecimal seconds are longer than sexagesimal
+	// seconds.
+
+	var hexadecimalDay = (sexagesimalSeconds / (3600 * 24))
+
+	var hexadecimalHours = hexadecimalDay * 16;
+	var hexadecimalMaximes = (hexadecimalHours - Math.floor(hexadecimalHours)) * 16;
+	var hexadecimalMinutes = (hexadecimalMaximes - Math.floor(hexadecimalMaximes)) * 16;
+	var hexadecimalSeconds = (hexadecimalMinutes - Math.floor(hexadecimalMinutes)) * 16;
+
+	if (this.hours) {
+		var hoursAngle = (hexadecimalHours % 16) / 16 * 360;;
+		this.hours.advanceTo(hoursAngle);
+	}
+
+	if (this.minutes) {
+		var minutesAngle = (hexadecimalMaximes % 16) / 16 * 360;
+		this.minutes.advanceTo(minutesAngle);
+	}
+
+	if (this.seconds) {
+		var secondsAngle = (hexadecimalMinutes % 16) / 16 * 360;
+
+		// Round angle so the hand moves at one decimal second
+		// intervals rather than continously. The timer needs to
+		// be fast enough, anything less than 100ms will show
+		// jitter.
+		//secondsAngle = Math.floor(secondsAngle / 1.40625) * 1.40625;
+		this.seconds.advanceTo(secondsAngle);
+	}
+
+	return this;
+};
+
 Clock.prototype.adjustHands = function(time) {
 	switch (this._base) {
 		case "sexagesimal":
@@ -404,6 +461,8 @@ Clock.prototype.adjustHands = function(time) {
 			return this.adjustHands24(time);
 		case "decimal":
 			return this.adjustHandsDecimal(time);
+		case "hexadecimal":
+			return this.adjustHandsHexadecimal(time);
 	}
 
 	return this;
