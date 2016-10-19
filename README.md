@@ -25,7 +25,13 @@ CSS styling.
   <dd>Creates the various SVG elements used for the clock.</dd>
 
   <dt>.start()</dt>
-  <dd>Starts the clock.</dd>
+  <dd>Starts the clock, using actual browser time.</dd>
+  
+  <dt>.stop()</dt>
+  <dd>Stops the clock.</dd>
+  
+  <dt>.display(Date)</dt>
+  <dd>Displays time of given date on the clock.</dd>
 </dl>
 
 ### Parameters ###
