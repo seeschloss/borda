@@ -32,35 +32,35 @@ CSS styling.
 
 <dl>
   <dt>.radius(int)</dt>
-  <dd>Radius of the clock face, in pixels (default `50`).</dd>
+  <dd>Radius of the clock face, in pixels (default <code>50</code>).</dd>
 
   <dt>.base(string)</dt>
-  <dd>Clock base, can be "sexagesimal" (regular clocks) or "decimal" (to display French revolutionary time) (default `sexagesimal`).</dd>
+  <dd>Clock base, can be "sexagesimal" (regular clocks) or "decimal" (to display French revolutionary time) (default <code>sexagesimal</code>).</dd>
 
   <dt>.hoursTicks(bool)</dt>
-  <dd>Show hours ticks (12 for sexagesimal clocks, 10 for decimal clocks) (default `true`).</dd>
+  <dd>Show hours ticks (12 for sexagesimal clocks, 10 for decimal clocks) (default <code>true</code>).</dd>
 
   <dt>.hoursDigits(bool)</dt>
-  <dd>Show hours digits (default `true`).</dd>
+  <dd>Show hours digits (default <code>true</code>).</dd>
 
   <dt>.minutesHand(bool)</dt>
-  <dd>Show minutes hand (default `true`).</dd>
+  <dd>Show minutes hand (default <code>true</code>).</dd>
 
   <dt>.minutesTicks(bool)</dt>
-  <dd>Show minutes ticks (60 for sexagesimal clocks, 100 for decimal clocks) (default `false`).</dd>
+  <dd>Show minutes ticks (60 for sexagesimal clocks, 100 for decimal clocks) (default <code>false</code>).</dd>
 
   <dt>.minutesDigits(bool)</dt>
-  <dd>Show minutes digits (0-55 for sexagesimal clocks by default, 00-90 for decimal clocks) (default `false`).</dd>
+  <dd>Show minutes digits (0-55 for sexagesimal clocks by default, 00-90 for decimal clocks) (default <code>false</code>).</dd>
 
   <dt>.secondsHand(bool)</dt>
-  <dd>Show seconds hand (default `true`).</dd>
+  <dd>Show seconds hand (default <code>true</code>).</dd>
 
   <dt>.rotateDigits(bool)</dt>
-  <dd>Rotate digits so they follow the face's curvature (default `false`).</dd>
+  <dd>Rotate digits so they follow the face's curvature (default <code>false</code>).</dd>
 
   <dt>.digits(array)</dt>
   <dd>Specify the digits to use for the hours. All array elements will be evenly spaced along the clock face, ending at top center.</dd>
-  <dd>You could have a clock with roman numerals by passing `['I', 'II', 'III', 'IIII', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']` to this option, or only four digits by passing `[3, 6, 9, 12]` (default is arabic numerals depending on clock base).</dd>
+  <dd>You could have a clock with roman numerals by passing <code>['I', 'II', 'III', 'IIII', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']</code> to this option, or only four digits by passing <code>[3, 6, 9, 12]</code> (default is arabic numerals depending on clock base).</dd>
 </dl>
 
 ## Examples ##
