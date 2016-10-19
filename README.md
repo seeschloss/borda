@@ -35,10 +35,10 @@ CSS styling.
   <dd>Radius of the clock face, in pixels (default <code>50</code>).</dd>
 
   <dt>.base(string)</dt>
-  <dd>Clock base, can be "sexagesimal" (regular clocks) or "decimal" (to display French revolutionary time) (default <code>sexagesimal</code>).</dd>
+  <dd>Clock base, can be "sexagesimal" (regular clocks), "24" (24-hour clock face) or "decimal" (French revolutionary time) (default <code>sexagesimal</code>).</dd>
 
   <dt>.hoursTicks(bool)</dt>
-  <dd>Show hours ticks (12 for sexagesimal clocks, 10 for decimal clocks) (default <code>true</code>).</dd>
+  <dd>Show hours ticks (12 for sexagesimal clocks, 24 for 24-hour clocks, 10 for decimal clocks) (default <code>true</code>).</dd>
 
   <dt>.hoursDigits(bool)</dt>
   <dd>Show hours digits (default <code>true</code>).</dd>
