@@ -220,6 +220,8 @@ Clock.prototype.draw = function() {
 				this.drawNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0], 0.3, "minute");
 			}
 			if (this.showMinutesTicks) {
+				// There are 256 minutes in an hexadecimal hour
+				// but 128 ticks is more reasonable
 				this.drawTicks(128, 0.06, "minute");
 			}
 
@@ -455,13 +457,17 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 	}
 
 	if (this.seconds) {
+		// We're actually displaying hexadecimal minutes here, moving
+		// the hand once every hexadecimal second. So the tick length
+		// stays useful, but the hand position also shows something
+		// more useful than just the 16 seconds in a minute.
 		var secondsAngle = (hexadecimalMinutes % 16) / 16 * 360;
 
-		// Round angle so the hand moves at one decimal second
+		// Round angle so the hand moves at one second
 		// intervals rather than continously. The timer needs to
 		// be fast enough, anything less than 100ms will show
 		// jitter.
-		//secondsAngle = Math.floor(secondsAngle / 1.40625) * 1.40625;
+		secondsAngle = Math.floor(secondsAngle / 1.40625) * 1.40625;
 		this.seconds.advanceTo(secondsAngle);
 	}
 
