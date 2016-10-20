@@ -470,6 +470,19 @@ Clock.prototype.adjustHands = function(time) {
 
 Clock.prototype.start = function() {
 	var that = this;
+
+	var interval = 50;
+	switch (this.base) {
+		case "decimal":
+			interval = 54;
+			// an exact multiple of 864ms (1 decimal second)
+			break;
+		case "hexadecimal":
+			interval = 60;
+			// close to a 22nd of 131.8359375ms (1 hexa second)
+			break;
+	}
+
 	this.timer = setInterval(function() {
 		that.adjustHands(new Date());
 	}, 50);
