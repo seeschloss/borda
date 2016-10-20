@@ -55,6 +55,7 @@ var Clock = function(element) {
 
 	this.base("sexagesimal");
 	this._radius = 50;
+	this._offset = -1 * (new Date()).getTimezoneOffset() * 60;
 
 	this.showHoursHand = true;
 	this.showHoursTicks = true;
@@ -67,6 +68,12 @@ var Clock = function(element) {
 	this._rotateDigits = false;
 
 	this.showSecondsHand = true;
+};
+
+Clock.prototype.offset = function(_) {
+	if (!arguments.length) return this._offset;
+	this._offset = +_;
+	return this;
 };
 
 Clock.prototype.base = function(_) {
@@ -317,7 +324,7 @@ Clock.prototype.drawNumbers = function(numbers, distance, cl) {
 
 Clock.prototype.adjustHandsSexagesimal = function(time) {
 	var sexagesimalSeconds = Math.floor(time.getTime() / 1000)
-		- (time.getTimezoneOffset() * 60);
+		+ this._offset;
 	// We need only seconds precision here, so the hand moves
 	// at one second intervals instead of continously. Using
 	// absolute time since epoch will prevent jumps due to CSS
@@ -346,7 +353,7 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 
 Clock.prototype.adjustHands24 = function(time) {
 	var sexagesimalSeconds = Math.floor(time.getTime() / 1000)
-		- (time.getTimezoneOffset() * 60);
+		+ this._offset;
 	// We need only seconds precision here, so the hand moves
 	// at one second intervals instead of continously. Using
 	// absolute time since epoch will prevent jumps due to CSS
@@ -379,13 +386,19 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 		// Paris meridian is exactly 9 minutes and 20.921
 		// seconds east of Greenwich, which is the reference
 		// for Unix time returned by time.getTime()
-
+	
 	// Taking milliseconds into account is absolutely necessary
 	// here, as decimal seconds are slightly shorter than sexagesimal
 	// seconds. If we only have sexagesimal second precision, then
 	// the decimal seconds hand will sometimes skip a second, one out
 	// of eight ticks or so (a decimal second is ~0.8 sexagesimal
 	// seconds).
+	
+	// Clock offset is not taken into account here, because it
+	// doesn't make sense to use it as decimal time is fundamentally
+	// not affected by time zones, it only has standard time which is
+	// supposed to be used around the world. Hypothetical time zones
+	// would have to be different from the current 24 timezones anyway.
 
 	var decimalDay = (sexagesimalSeconds / (3600 * 24))
 
@@ -418,7 +431,7 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 
 Clock.prototype.adjustHandsHexadecimal = function(time) {
 	var sexagesimalSeconds = (time.getTime() / 1000)
-		- (time.getTimezoneOffset() * 60);
+		+ this._offset;
 
 	// Taking milliseconds into account is absolutely necessary
 	// here, as hexadecimal seconds are longer than sexagesimal
