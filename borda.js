@@ -6,7 +6,9 @@ var ClockHand = function(element, radius) {
 };
 
 ClockHand.prototype.setAngle = function(degrees) {
-	this.element.setAttribute('transform', "rotate(" + degrees + ", " + this.radius + ", " + this.radius + ")");
+	if (degrees) {
+		this.element.setAttribute('transform', "rotate(" + degrees + ", " + this.radius + ", " + this.radius + ")");
+	}
 };
 
 ClockHand.prototype.advanceTo = function(degrees) {
@@ -20,8 +22,8 @@ ClockHand.prototype.advanceTo = function(degrees) {
 			this.setAngle(degrees);
 			this._currentDegrees = degrees;
 		} else if (!this.moving) {
-			var duration = 100; // milliseconds
-			var ticks = 10;
+			var duration = 70; // milliseconds
+			var ticks = 5;
 			var tickLength = duration/ticks;
 			var stepAngle = difference/ticks;
 
