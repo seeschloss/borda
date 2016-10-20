@@ -32,6 +32,9 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dt>.stop()</dt>
   <dd>Stops the clock.</dd>
   
+  <dt>.offset(int)</dt>
+  <dd>Time offset to use from UTC. Default is browser's timezone.</dd>
+  
   <dt>.display(Date)</dt>
   <dd>Displays time of given date on the clock.</dd>
   <dd><i>Date</i> should be a JavaScript <code>Date</code> object.</dd>
