@@ -33,7 +33,7 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dd>Stops the clock.</dd>
   
   <dt>.offset(int)</dt>
-  <dd>Time offset to use from UTC. Default is browser's timezone.</dd>
+  <dd>Time offset to use from UTC, in seconds. Default is browser's timezone.</dd>
   
   <dt>.display(Date)</dt>
   <dd>Displays time of given date on the clock.</dd>
