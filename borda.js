@@ -82,6 +82,8 @@ var Clock = function(element) {
 	this.showMinutesTicks = false;
 	this.showMinutesDigits = false;
 
+	this._smooth = false;
+
 	this._rotateDigits = false;
 
 	this.showSecondsHand = true;
@@ -160,6 +162,12 @@ Clock.prototype.minutesDigits = function(_) {
 Clock.prototype.secondsHand = function(_) {
 	if (!arguments.length) return this.showSecondsHand;
 	this.showSecondsHand = !!_;
+	return this;
+};
+
+Clock.prototype.smooth = function(_) {
+	if (!arguments.length) return this._smooth;
+	this._smooth = !!_;
 	return this;
 };
 
@@ -342,12 +350,14 @@ Clock.prototype.drawNumbers = function(numbers, distance, cl) {
 };
 
 Clock.prototype.adjustHandsSexagesimal = function(time) {
-	var sexagesimalSeconds = Math.floor(time.getTime() / 1000)
+	var sexagesimalSeconds = (time.getTime() / 1000)
 		+ this._offset;
-	// We need only seconds precision here, so the hand moves
-	// at one second intervals instead of continously. Using
-	// absolute time since epoch will prevent jumps due to CSS
-	// transitions around midnight.
+
+	if (!this._smooth) {
+		sexagesimalSeconds = Math.floor(sexagesimalSeconds);
+		// We need only seconds precision here, so the hand moves
+		// at one second intervals instead of continously.
+	}
 
 	var hours = sexagesimalSeconds / 3600;
 	var minutes = sexagesimalSeconds / 60;
@@ -371,12 +381,14 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 };
 
 Clock.prototype.adjustHands24 = function(time) {
-	var sexagesimalSeconds = Math.floor(time.getTime() / 1000)
+	var sexagesimalSeconds = (time.getTime() / 1000)
 		+ this._offset;
-	// We need only seconds precision here, so the hand moves
-	// at one second intervals instead of continously. Using
-	// absolute time since epoch will prevent jumps due to CSS
-	// transitions around midnight.
+
+	if (!this._smooth) {
+		sexagesimalSeconds = Math.floor(sexagesimalSeconds);
+		// We need only seconds precision here, so the hand moves
+		// at one second intervals instead of continously.
+	}
 
 	var hours = sexagesimalSeconds / 3600;
 	var minutes = sexagesimalSeconds / 60;
@@ -437,11 +449,13 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 	if (this.seconds) {
 		var secondsAngle = (decimalDay * 100000 % 100) / 100 * 360;
 
-		// Round angle so the hand moves at one decimal second
-		// intervals rather than continously. The timer needs to
-		// be fast enough, anything less than 100ms will show
-		// jitter.
-		secondsAngle = Math.floor(secondsAngle / 3.6) * 3.6;
+		if (!this._smooth) {
+			// Round angle so the hand moves at one decimal second
+			// intervals rather than continously. The timer needs to
+			// be fast enough, anything less than 100ms will show
+			// jitter.
+			secondsAngle = Math.floor(secondsAngle / 3.6) * 3.6;
+		}
 		this.seconds.advanceTo(secondsAngle);
 	}
 
@@ -480,11 +494,13 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 		// more useful than just the 16 seconds in a minute.
 		var secondsAngle = (hexadecimalMinutes % 16) / 16 * 360;
 
-		// Round angle so the hand moves at one second
-		// intervals rather than continously. The timer needs to
-		// be fast enough, anything less than 100ms will show
-		// jitter.
-		secondsAngle = Math.floor(secondsAngle / 1.40625) * 1.40625;
+		if (!this._smooth) {
+			// Round angle so the hand moves at one second
+			// intervals rather than continously. The timer needs to
+			// be fast enough, anything less than 100ms will show
+			// jitter.
+			secondsAngle = Math.floor(secondsAngle / 1.40625) * 1.40625;
+		}
 		this.seconds.advanceTo(secondsAngle);
 	}
 
