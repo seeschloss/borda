@@ -54,7 +54,8 @@ ClockHand.prototype.advanceTo = function(degrees) {
 				if (currentAngle < (that._currentDegrees + difference)) {
 					setTimeout(advanceOneStep, tickLength);
 				} else {
-					that._currentDegrees = degrees % 360;
+					that.setAngle(degrees);
+					that._currentDegrees = degrees;
 					that.moving = false;
 				}
 			};
