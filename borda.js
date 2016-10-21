@@ -1,4 +1,13 @@
-var ClockHand = function(element, radius) {
+if (!("classList" in document.createElementNS("http://www.w3.org/2000/svg","g"))) {
+	var descr = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'classList');
+	Object.defineProperty(SVGElement.prototype, 'classList', descr);
+
+	// This probably shouldn't be done like this, after all we're
+	// modifying things that might be used by other JS libraries
+	// on the same page, but...
+}
+
+var ClockHand = function(element, radius, margin) {
 	this.element = element;
 	this.radius = radius;
 
