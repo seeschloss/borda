@@ -10,13 +10,20 @@ if (!("classList" in document.createElementNS("http://www.w3.org/2000/svg","g"))
 var ClockHand = function(element, radius, margin) {
 	this.element = element;
 	this.radius = radius;
+	this.margin = margin;
 
 	var _currentDegrees = undefined;
 };
 
 ClockHand.prototype.setAngle = function(degrees) {
-	if (degrees) {
-		this.element.setAttribute('transform', "rotate(" + degrees + ", " + this.radius + ", " + this.radius + ")");
+	if (degrees !== undefined) {
+		var radians = (degrees - 90) / 180 * Math.PI;
+
+		var x = (this.radius - this.margin) * Math.cos(radians) + this.radius;
+		var y = (this.radius - this.margin) * Math.sin(radians) + this.radius;
+
+		this.element.setAttribute('x1', x);
+		this.element.setAttribute('y1', y);
 	}
 };
 
@@ -251,7 +258,7 @@ Clock.prototype.draw = function() {
 	hours.setAttribute("x2", this._radius);
 	hours.setAttribute("y2", this._radius);
 	this.element.appendChild(hours);
-	this.hours = new ClockHand(hours, this._radius);
+	this.hours = new ClockHand(hours, this._radius, this._radius * 0.4);
 
 	var minutes = document.createElementNS(this.svgNS, "line");
 	minutes.classList.add("minutes");
@@ -261,7 +268,7 @@ Clock.prototype.draw = function() {
 	minutes.setAttribute("x2", this._radius);
 	minutes.setAttribute("y2", this._radius);
 	this.element.appendChild(minutes);
-	this.minutes = new ClockHand(minutes, this._radius);
+	this.minutes = new ClockHand(minutes, this._radius, this._radius * 0.1);
 
 	if (this.showSecondsHand) {
 		var seconds = document.createElementNS(this.svgNS, "line");
@@ -272,7 +279,7 @@ Clock.prototype.draw = function() {
 		seconds.setAttribute("x2", this._radius);
 		seconds.setAttribute("y2", this._radius);
 		this.element.appendChild(seconds);
-		this.seconds = new ClockHand(seconds, this._radius);
+		this.seconds = new ClockHand(seconds, this._radius, this._radius * 0.1);
 	}
 
 	return this;
