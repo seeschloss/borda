@@ -7,6 +7,108 @@ if (!("classList" in document.createElementNS("http://www.w3.org/2000/svg","g"))
 	// on the same page, but...
 }
 
+var ClockTimer = function() {
+	this.callbacks = {};
+	this.timer = null;
+	this.interval = null;
+};
+
+ClockTimer.prototype.start = function(interval) {
+	this.interval = interval;
+	var that = this;
+	this.timer = setInterval(function() {
+		that.callback();
+	}, this.interval);
+};
+
+ClockTimer.prototype.stop = function() {
+	clearInterval(this.timer);
+	this.timer = null;
+	this.interval = null;
+};
+
+ClockTimer.prototype.callback = function() {
+	var time = new Date();
+	var timestamp = time.getTime();
+
+	var elementsToSuspend = [];
+	var callbacksToCall = [];
+
+	for (var id in this.callbacks) {
+		if (this.callbacks[id].last + this.interval < timestamp + this.interval) {
+			callbacksToCall.push(this.callbacks[id]);
+
+			if (this.callbacks[id].svg !== undefined && this.callbacks[id].svg.suspendRedraw !== undefined) {
+				elementsToSuspend.push(this.callbacks[id].svg);
+			}
+		}
+	};
+
+	elementsToSuspend.forEach(function(element) {
+		element.suspendHandleID = element.suspendRedraw(this.interval);
+	});
+
+	callbacksToCall.forEach(function(callback) {
+		callback.last = timestamp;
+		callback.func(time);
+	});
+
+	elementsToSuspend.forEach(function(element) {
+		element.unsuspendRedraw(element.suspendHandleID);
+	});
+};
+
+ClockTimer.prototype.minInterval = function() {
+	var min = undefined;
+	for (var id in this.callbacks) {
+		var interval = this.callbacks[id].interval;
+
+		if (min === undefined || interval < min) {
+			min = interval;
+		}
+	};
+
+	return min;
+};
+
+ClockTimer.prototype.addCallback = function(f, interval, svg) {
+	var rand = Math.floor(Math.random() * 1024 * 1024 * 1024);
+	this.callbacks[rand] = {
+		func: f,
+		interval: interval,
+		last: 0
+	};
+
+	if (svg && svg.ownerSVGElement !== undefined) {
+		this.callbacks[rand].svg = svg.ownerSVGElement;
+	}
+
+	var min = this.minInterval();
+	if (min != this.interval) {
+		this.stop();
+		this.start(min);
+	}
+
+	if (!this.timer) {
+		this.start();
+	}
+
+	return rand;
+};
+
+ClockTimer.prototype.removeCallback = function(id) {
+	if (this.callbacks[id] !== undefined) {
+		delete this.callbacks[id];
+	}
+
+	if (Object.keys(this.callbacks).length === 0) {
+		this.stop();
+	}
+};
+
+ClockTimer = new ClockTimer();
+
+
 var ClockHand = function(element, radius, margin) {
 	this.element = element;
 	this.radius = radius;
@@ -47,19 +149,27 @@ ClockHand.prototype.advanceTo = function(degrees) {
 			var currentAngle = this._currentDegrees;
 
 			this.moving = true;
-			var advanceOneStep = function() {
-				currentAngle += stepAngle;
+
+			var start = undefined;
+			var advanceOneStep = function(timestamp) {
+				if (start === undefined) {
+					start = timestamp;
+				}
+
+				var progress = (timestamp - start) / duration;
+				currentAngle += (stepAngle * progress);
+
 				that.setAngle(currentAngle);
 
 				if (currentAngle < (that._currentDegrees + difference)) {
-					setTimeout(advanceOneStep, tickLength);
+					window.requestAnimationFrame(advanceOneStep);
 				} else {
 					that.setAngle(degrees);
 					that._currentDegrees = degrees;
 					that.moving = false;
 				}
 			};
-			advanceOneStep();
+			window.requestAnimationFrame(advanceOneStep);
 		}
 	}
 
@@ -224,7 +334,7 @@ Clock.prototype.draw = function() {
 				this.drawNumbers(this._digits, 0.175, "hour");
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(24, 0.08, "hour");
+				this.drawTicks(12, 0.08, "hour");
 			}
 			break;
 		case "decimal":
@@ -620,15 +730,15 @@ Clock.prototype.start = function() {
 			break;
 	}
 
-	this.timer = setInterval(function() {
-		that.adjustHands(new Date());
-	}, 50);
+	this.timer = ClockTimer.addCallback(function(time) {
+		that.adjustHands(time);
+	}, interval, this.element);
 
 	return this;
 };
 
 Clock.prototype.stop = function() {
-	clearInterval(this.timer);
+	ClockTimer.removeCallback(this.timer);
 	this.timer = undefined;
 
 	return this;
