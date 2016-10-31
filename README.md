@@ -35,6 +35,16 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dt>.display(Date)</dt>
   <dd>Displays time of given date on the clock.</dd>
   <dd><i>Date</i> should be a JavaScript <code>Date</code> object.</dd>
+  
+  <dt>.toString()</dt>
+  <dd>Returns clock time, formatted depending on the clock base.</dd>
+</dl>
+
+### Events ###
+
+<dl>
+  <dt>clockTick</dt>
+  <dd>The <code>clockTick</code> event is dispatched to the clock SVG element every second, depending on the clock base.</dd>
 </dl>
 
 ### Parameters ###
