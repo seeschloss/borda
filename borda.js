@@ -274,6 +274,33 @@ Clock.prototype.minutesDigits = function(_) {
 	return this;
 };
 
+Clock.prototype.hoursRadius = function(_) {
+	if (!arguments.length) {
+		return this._hoursRadius ? this._hoursRadius : (this._radius * 0.6);
+	}
+
+	this._hoursRadius = +_;
+	return this;
+};
+
+Clock.prototype.minutesRadius = function(_) {
+	if (!arguments.length) {
+		return this._minutesRadius ? this._minutesRadius : this._radius;
+	}
+
+	this._minutesRadius = +_;
+	return this;
+};
+
+Clock.prototype.secondsRadius = function(_) {
+	if (!arguments.length) {
+		return this._secondsRadius ? this._secondsRadius : this.minutesRadius();
+	}
+
+	this._secondsRadius = +_;
+	return this;
+};
+
 Clock.prototype.secondsHand = function(_) {
 	if (!arguments.length) return this.showSecondsHand;
 	this.showSecondsHand = !!_;
@@ -318,64 +345,64 @@ Clock.prototype.draw = function() {
 	switch (this._base) {
 		case "sexagesimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute");
+				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute", this.minutesRadius());
 			}
 			if (this.showMinutesTicks) {
-				this.drawTicks(60, 0.06, "minute");
+				this.drawTicks(60, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour");
+				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(12, 0.08, "hour");
+				this.drawTicks(12, 0.08, "hour", this.radius());
 			}
 			break;
 		case "24":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute");
+				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute", this.minutesRadius());
 			}
 			if (this.showMinutesTicks) {
-				this.drawTicks(60, 0.06, "minute");
+				this.drawTicks(60, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour");
+				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(12, 0.08, "hour");
+				this.drawTicks(12, 0.08, "hour", this.radius());
 			}
 			break;
 		case "decimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([10, 20, 30, 40, 50, 60, 70, 80, 90, '00'], 0.3, "minute");
+				this.drawNumbers([10, 20, 30, 40, 50, 60, 70, 80, 90, '00'], 0.3, "minute", this.minutesRadius());
 			}
 			if (this.showMinutesTicks) {
-				this.drawTicks(100, 0.06, "minute");
+				this.drawTicks(100, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour");
+				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(10, 0.08, "hour");
+				this.drawTicks(10, 0.08, "hour", this.radius());
 			}
 			break;
 		case "hexadecimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0], 0.3, "minute");
+				this.drawNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0], 0.3, "minute", this.minutesRadius());
 			}
 			if (this.showMinutesTicks) {
 				// There are 256 minutes in an hexadecimal hour
 				// but 128 ticks is more reasonable
-				this.drawTicks(128, 0.06, "minute");
+				this.drawTicks(128, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour");
+				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(16, 0.08, "hour");
+				this.drawTicks(16, 0.08, "hour", this.radius());
 			}
 			break;
 	}
@@ -384,41 +411,41 @@ Clock.prototype.draw = function() {
 	hours.classList.add("hours");
 	hours.classList.add("hand");
 	hours.setAttribute("x1", this._radius);
-	hours.setAttribute("y1", this._radius * 0.4);
+	hours.setAttribute("y1", this.hoursRadius());
 	hours.setAttribute("x2", this._radius);
 	hours.setAttribute("y2", this._radius);
 	this.element.appendChild(hours);
-	this.hoursHand = new ClockHand(hours, this._radius, this._radius * 0.4);
+	this.hoursHand = new ClockHand(hours, this.radius(), this.radius() - this.hoursRadius());
 	this.hoursHand._transitions = this._transitions;
 
 	var minutes = document.createElementNS(this.svgNS, "line");
 	minutes.classList.add("minutes");
 	minutes.classList.add("hand");
-	minutes.setAttribute("x1", this._radius);
-	minutes.setAttribute("y1", this._radius * 0.1);
-	minutes.setAttribute("x2", this._radius);
-	minutes.setAttribute("y2", this._radius);
+	minutes.setAttribute("x1", this.minutesRadius());
+	minutes.setAttribute("y1", this.minutesRadius() * 0.1);
+	minutes.setAttribute("x2", this.minutesRadius());
+	minutes.setAttribute("y2", this.minutesRadius());
 	this.element.appendChild(minutes);
-	this.minutesHand = new ClockHand(minutes, this._radius, this._radius * 0.1);
+	this.minutesHand = new ClockHand(minutes, this.minutesRadius(), this.minutesRadius() * 0.1);
 	this.minutesHand._transitions = this._transitions;
 
 	if (this.showSecondsHand) {
 		var seconds = document.createElementNS(this.svgNS, "line");
 		seconds.classList.add("seconds");
 		seconds.classList.add("hand");
-		seconds.setAttribute("x1", this._radius);
-		seconds.setAttribute("y1", this._radius * 0.1);
-		seconds.setAttribute("x2", this._radius);
-		seconds.setAttribute("y2", this._radius);
+		seconds.setAttribute("x1", this.secondsRadius());
+		seconds.setAttribute("y1", this.secondsRadius() * 0.1);
+		seconds.setAttribute("x2", this.secondsRadius());
+		seconds.setAttribute("y2", this.secondsRadius());
 		this.element.appendChild(seconds);
-		this.secondsHand = new ClockHand(seconds, this._radius, this._radius * 0.1);
+		this.secondsHand = new ClockHand(seconds, this.secondsRadius(), this.secondsRadius() * 0.1);
 		this.secondsHand._transitions = this._transitions;
 	}
 
 	return this;
 };
 
-Clock.prototype.drawTicks = function(n, length, cl) {
+Clock.prototype.drawTicks = function(n, length, cl, radius) {
 	var degrees = 360 / n;
 
 	var g = document.createElementNS(this.svgNS, "g");
@@ -433,11 +460,11 @@ Clock.prototype.drawTicks = function(n, length, cl) {
 		if (cl) {
 			line.classList.add(cl);
 		}
-		line.setAttribute("x1", this._radius);
+		line.setAttribute("x1", radius);
 		line.setAttribute("y1", 0);
-		line.setAttribute("x2", this._radius);
-		line.setAttribute("y2", this._radius * length);
-		line.setAttribute("transform", "rotate(" + i + ", " + this._radius + ", " + this._radius + ")");
+		line.setAttribute("x2", radius);
+		line.setAttribute("y2", radius * length);
+		line.setAttribute("transform", "rotate(" + i + ", " + radius + ", " + radius + ")");
 
 		g.appendChild(line);
 	}
@@ -447,7 +474,7 @@ Clock.prototype.drawTicks = function(n, length, cl) {
 	return this;
 };
 
-Clock.prototype.drawNumbers = function(numbers, distance, cl) {
+Clock.prototype.drawNumbers = function(numbers, distance, cl, radius) {
 	var degrees = 360 / numbers.length;
 
 	var g = document.createElementNS(this.svgNS, "g");
@@ -463,11 +490,11 @@ Clock.prototype.drawNumbers = function(numbers, distance, cl) {
 		if (cl) {
 			outerWrapper.classList.add(cl);
 		}
-		outerWrapper.setAttribute("transform", "rotate(" + i + ", " + this._radius + ", " + this._radius + ")");
+		outerWrapper.setAttribute("transform", "rotate(" + i + ", " + radius + ", " + radius + ")");
 
 		var innerWrapper = document.createElementNS(this.svgNS, "g");
 
-		innerWrapper.setAttribute("transform", "translate(" + this._radius + ", " + (this._radius * distance) + ")");
+		innerWrapper.setAttribute("transform", "translate(" + radius + ", " + (radius * distance) + ")");
 		
 		var text = document.createElementNS(this.svgNS, "text");
 		text.textContent = numbers[n];
@@ -475,7 +502,7 @@ Clock.prototype.drawNumbers = function(numbers, distance, cl) {
 			text.setAttribute("transform", "rotate(-" + i + ")");
 			text.setAttribute("dominant-baseline", "central");
 		} else {
-			text.setAttribute("transform", "translate(0, " + (this._radius * 0.05) + ")");
+			text.setAttribute("transform", "translate(0, " + (radius * 0.05) + ")");
 		}
 		text.style.textAnchor = "middle";
 		

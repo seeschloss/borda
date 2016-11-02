@@ -56,6 +56,15 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dt>.radius(int)</dt>
   <dd>Radius of the clock face, in pixels (default <code>50</code>).</dd>
 
+  <dt>.hoursRadius(int)</dt>
+  <dd>Radius of the hours hand (default <code>radius() × 0.6</code>).</dd>
+
+  <dt>.minutesRadius(int)</dt>
+  <dd>Radius of the minutes hand (default <code>same as radius()</code>).</dd>
+
+  <dt>.secondsRadius(int)</dt>
+  <dd>Radius of the seconds hand (default <code>same as minutesRadius()</code>).</dd>
+
   <dt>.base(string)</dt>
   <dd>Clock base, can be "sexagesimal" (regular clocks), "24" (24-hour clock face) or "decimal" (French revolutionary time) (default <code>sexagesimal</code>).</dd>
 
