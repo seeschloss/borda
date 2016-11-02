@@ -114,6 +114,8 @@ var ClockHand = function(element, radius, margin) {
 	this.radius = radius;
 	this.margin = margin;
 
+	this._transitions = true;
+
 	var _currentDegrees = undefined;
 };
 
@@ -135,7 +137,7 @@ ClockHand.prototype.advanceTo = function(degrees) {
 		// We need the real absolute difference in degrees, to allow
 		// smooth movement even when going from 355° to 5°
 
-		if (this._currentDegrees === undefined || difference < 1) {
+		if (!this._transitions || this._currentDegrees === undefined || difference < 1) {
 			// No need to do things smoothly if the angle is so small
 			this.setAngle(degrees);
 			this._currentDegrees = degrees;
@@ -193,6 +195,7 @@ var Clock = function(element) {
 	this.showMinutesDigits = false;
 
 	this._smooth = false;
+	this._transitions = true;
 
 	this._rotateDigits = false;
 
@@ -280,6 +283,12 @@ Clock.prototype.secondsHand = function(_) {
 Clock.prototype.smooth = function(_) {
 	if (!arguments.length) return this._smooth;
 	this._smooth = !!_;
+	return this;
+};
+
+Clock.prototype.transitions = function(_) {
+	if (!arguments.length) return this._transitions;
+	this._transitions = !!_;
 	return this;
 };
 
@@ -380,6 +389,7 @@ Clock.prototype.draw = function() {
 	hours.setAttribute("y2", this._radius);
 	this.element.appendChild(hours);
 	this.hoursHand = new ClockHand(hours, this._radius, this._radius * 0.4);
+	this.hoursHand._transitions = this._transitions;
 
 	var minutes = document.createElementNS(this.svgNS, "line");
 	minutes.classList.add("minutes");
@@ -390,6 +400,7 @@ Clock.prototype.draw = function() {
 	minutes.setAttribute("y2", this._radius);
 	this.element.appendChild(minutes);
 	this.minutesHand = new ClockHand(minutes, this._radius, this._radius * 0.1);
+	this.minutesHand._transitions = this._transitions;
 
 	if (this.showSecondsHand) {
 		var seconds = document.createElementNS(this.svgNS, "line");
@@ -401,6 +412,7 @@ Clock.prototype.draw = function() {
 		seconds.setAttribute("y2", this._radius);
 		this.element.appendChild(seconds);
 		this.secondsHand = new ClockHand(seconds, this._radius, this._radius * 0.1);
+		this.secondsHand._transitions = this._transitions;
 	}
 
 	return this;

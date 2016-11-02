@@ -85,7 +85,10 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dd>You could have a clock with roman numerals by passing <code>['I', 'II', 'III', 'IIII', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII']</code> to this option, or only four digits by passing <code>[3, 6, 9, 12]</code> (default is arabic numerals depending on clock base).</dd>
 
   <dt>.smooth(bool)</dt>
-  <dd>Move seconds hand smoothly instead of once per second (default <code>false</code>).</dd>
+  <dd>Move seconds hand continuously instead of once per second (default <code>false</code>).</dd>
+
+  <dt>.transitions(bool)</dt>
+  <dd>Use smooth transitions to move the hands (default <code>true</code>). This is independent of the above parameter.</dd>
 </dl>
 
 ## Examples ##
