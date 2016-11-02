@@ -421,6 +421,12 @@ Clock.prototype.draw = function() {
 Clock.prototype.drawTicks = function(n, length, cl) {
 	var degrees = 360 / n;
 
+	var g = document.createElementNS(this.svgNS, "g");
+	g.classList.add("ticks");
+	if (cl) {
+		g.classList.add(cl);
+	}
+
 	for (var i = degrees; i <= 360; i += degrees) {
 		var line = document.createElementNS(this.svgNS, "line");
 		line.classList.add("tick");
@@ -433,14 +439,22 @@ Clock.prototype.drawTicks = function(n, length, cl) {
 		line.setAttribute("y2", this._radius * length);
 		line.setAttribute("transform", "rotate(" + i + ", " + this._radius + ", " + this._radius + ")");
 
-		this.element.appendChild(line);
+		g.appendChild(line);
 	}
+
+	this.element.appendChild(g);
 
 	return this;
 };
 
 Clock.prototype.drawNumbers = function(numbers, distance, cl) {
 	var degrees = 360 / numbers.length;
+
+	var g = document.createElementNS(this.svgNS, "g");
+	g.classList.add("numbers");
+	if (cl) {
+		g.classList.add(cl);
+	}
 
 	var n = 0;
 	for (var i = degrees; i <= 360; i += degrees, n++) {
@@ -467,8 +481,10 @@ Clock.prototype.drawNumbers = function(numbers, distance, cl) {
 		
 		innerWrapper.appendChild(text);
 		outerWrapper.appendChild(innerWrapper);
-		this.element.appendChild(outerWrapper);
+		g.appendChild(outerWrapper);
 	}
+
+	this.element.appendChild(g);
 
 	return this;
 };
