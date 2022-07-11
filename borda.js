@@ -119,15 +119,40 @@ var ClockHand = function(element, radius, margin) {
 	var _currentDegrees = undefined;
 };
 
+/* There are a lot of different available ways to move the
+ * hands. My tests show that all of them basically have the
+ * same performance in most browsers, so for now I will stick
+ * with using the most low-level one: manually computing hand
+ * coordinates and directly setting the x,y attributes of the
+ * element, and handling the smooth transition manually.
+ * Theoretically, moving the hands just once per tick with CSS
+ * and letting a CSS transition do the smoothing should be more
+ * performant and could even be hardware-accelerated, but my
+ * experiments show that it's not the case. So let's not use
+ * this, it will give more flexibility to users.
+ */
+ClockHand.prototype.setAngleCSS = function(degrees) {
+	this.element.style.transform = 'rotate(' + degrees + 'deg)';
+	this.element.style.transformOrigin = this.radius + 'px ' + this.radius + 'px';
+};
+
+ClockHand.prototype.setAngleTransform = function(degrees) {
+	this.element.setAttribute('transform', 'rotate(' + degrees + ', ' + [this.radius, this.radius] + ')');
+};
+
+ClockHand.prototype.setAngleCoordinates = function(degrees) {
+	var radians = (degrees - 90) / 180 * Math.PI;
+
+	var x = (this.radius - this.margin) * Math.cos(radians) + this.radius;
+	var y = (this.radius - this.margin) * Math.sin(radians) + this.radius;
+
+	this.element.setAttribute('x1', x);
+	this.element.setAttribute('y1', y);
+};
+
 ClockHand.prototype.setAngle = function(degrees) {
 	if (degrees !== undefined) {
-		var radians = (degrees - 90) / 180 * Math.PI;
-
-		var x = (this.radius - this.margin) * Math.cos(radians) + this.radius;
-		var y = (this.radius - this.margin) * Math.sin(radians) + this.radius;
-
-		this.element.setAttribute('x1', x);
-		this.element.setAttribute('y1', y);
+		this.setAngleCoordinates(degrees);
 	}
 };
 
@@ -276,7 +301,7 @@ Clock.prototype.minutesDigits = function(_) {
 
 Clock.prototype.hoursRadius = function(_) {
 	if (!arguments.length) {
-		return this._hoursRadius ? this._hoursRadius : (this._radius * 0.6);
+		return this._hoursRadius ? this._hoursRadius : this._radius;
 	}
 
 	this._hoursRadius = +_;
@@ -335,6 +360,39 @@ Clock.prototype.draw = function() {
 	this.element.classList.add("clock");
 	this.element.classList.add(this._base);
 
+	if (this.secondsRadius() != this.radius()) {
+		var secondsFace = document.createElementNS(this.svgNS, "circle");
+		secondsFace.classList.add("face");
+		secondsFace.classList.add("seconds");
+		secondsFace.classList.add("inner");
+		secondsFace.setAttribute("cx", this.radius());
+		secondsFace.setAttribute("cy", this.radius());
+		secondsFace.setAttribute("r",  this.secondsRadius());
+		this.element.appendChild(secondsFace);
+	}
+
+	if (this.minutesRadius() != this.radius()) {
+		var minutesFace = document.createElementNS(this.svgNS, "circle");
+		minutesFace.classList.add("face");
+		minutesFace.classList.add("minutes");
+		minutesFace.classList.add("inner");
+		minutesFace.setAttribute("cx", this.radius());
+		minutesFace.setAttribute("cy", this.radius());
+		minutesFace.setAttribute("r",  this.minutesRadius());
+		this.element.appendChild(minutesFace);
+	}
+
+	if (this.hoursRadius() != this.radius()) {
+		var hoursFace = document.createElementNS(this.svgNS, "circle");
+		hoursFace.classList.add("face");
+		hoursFace.classList.add("hours");
+		hoursFace.classList.add("inner");
+		hoursFace.setAttribute("cx", this.radius());
+		hoursFace.setAttribute("cy", this.radius());
+		hoursFace.setAttribute("r",  this.hoursRadius());
+		this.element.appendChild(hoursFace);
+	}
+
 	var face = document.createElementNS(this.svgNS, "circle");
 	face.classList.add("face");
 	face.setAttribute("cx", this._radius);
@@ -345,52 +403,52 @@ Clock.prototype.draw = function() {
 	switch (this._base) {
 		case "sexagesimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute", this.minutesRadius());
+				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], "minute", this.minutesRadius() * 0.75);
 			}
 			if (this.showMinutesTicks) {
 				this.drawTicks(60, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
+				this.drawNumbers(this._digits, "hour", this.hoursRadius() * 0.9);
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(12, 0.08, "hour", this.radius());
+				this.drawTicks(12, 0.08, "hour", this.hoursRadius());
 			}
 			break;
 		case "24":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], 0.3, "minute", this.minutesRadius());
+				this.drawNumbers([5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 0], "minute", this.minutesRadius() * 0.75);
 			}
 			if (this.showMinutesTicks) {
 				this.drawTicks(60, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
+				this.drawNumbers(this._digits, "hour", this.hoursRadius() * 0.9);
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(12, 0.08, "hour", this.radius());
+				this.drawTicks(12, 0.08, "hour", this.hoursRadius());
 			}
 			break;
 		case "decimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([10, 20, 30, 40, 50, 60, 70, 80, 90, '00'], 0.3, "minute", this.minutesRadius());
+				this.drawNumbers([10, 20, 30, 40, 50, 60, 70, 80, 90, '00'], "minute", this.minutesRadius() * 0.75);
 			}
 			if (this.showMinutesTicks) {
 				this.drawTicks(100, 0.06, "minute", this.minutesRadius());
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
+				this.drawNumbers(this._digits, "hour", this.hoursRadius() * 0.9);
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(10, 0.08, "hour", this.radius());
+				this.drawTicks(10, 0.08, "hour", this.hoursRadius());
 			}
 			break;
 		case "hexadecimal":
 			if (this.showMinutesDigits) {
-				this.drawNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0], 0.3, "minute", this.minutesRadius());
+				this.drawNumbers([1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F', 0], "minute", this.minutesRadius() * 0.75);
 			}
 			if (this.showMinutesTicks) {
 				// There are 256 minutes in an hexadecimal hour
@@ -399,10 +457,10 @@ Clock.prototype.draw = function() {
 			}
 
 			if (this.showHoursDigits) {
-				this.drawNumbers(this._digits, 0.175, "hour", this.radius());
+				this.drawNumbers(this._digits, "hour", this.hoursRadius() * 0.9);
 			}
 			if (this.showHoursTicks) {
-				this.drawTicks(16, 0.08, "hour", this.radius());
+				this.drawTicks(16, 0.08, "hour", this.hoursRadius());
 			}
 			break;
 	}
@@ -410,35 +468,36 @@ Clock.prototype.draw = function() {
 	var hours = document.createElementNS(this.svgNS, "line");
 	hours.classList.add("hours");
 	hours.classList.add("hand");
+	var hoursHandRadius = this._hoursRadius !== undefined ? this._hoursRadius * 0.85 : this.hoursRadius() * 0.6;
 	hours.setAttribute("x1", this._radius);
-	hours.setAttribute("y1", this.hoursRadius());
+	hours.setAttribute("y1", this.radius() - hoursHandRadius);
 	hours.setAttribute("x2", this._radius);
 	hours.setAttribute("y2", this._radius);
 	this.element.appendChild(hours);
-	this.hoursHand = new ClockHand(hours, this.radius(), this.radius() - this.hoursRadius());
+	this.hoursHand = new ClockHand(hours, this.radius(), this.radius() - hoursHandRadius);
 	this.hoursHand._transitions = this._transitions;
 
 	var minutes = document.createElementNS(this.svgNS, "line");
 	minutes.classList.add("minutes");
 	minutes.classList.add("hand");
-	minutes.setAttribute("x1", this.minutesRadius());
-	minutes.setAttribute("y1", this.minutesRadius() * 0.1);
-	minutes.setAttribute("x2", this.minutesRadius());
-	minutes.setAttribute("y2", this.minutesRadius());
+	minutes.setAttribute("x1", this._radius);
+	minutes.setAttribute("y1", this.radius() - this.minutesRadius() * 0.9);
+	minutes.setAttribute("x2", this._radius);
+	minutes.setAttribute("y2", this._radius);
 	this.element.appendChild(minutes);
-	this.minutesHand = new ClockHand(minutes, this.minutesRadius(), this.minutesRadius() * 0.1);
+	this.minutesHand = new ClockHand(minutes, this.radius(), this.radius() - this.minutesRadius() * 0.9);
 	this.minutesHand._transitions = this._transitions;
 
 	if (this.showSecondsHand) {
 		var seconds = document.createElementNS(this.svgNS, "line");
 		seconds.classList.add("seconds");
 		seconds.classList.add("hand");
-		seconds.setAttribute("x1", this.secondsRadius());
-		seconds.setAttribute("y1", this.secondsRadius() * 0.1);
-		seconds.setAttribute("x2", this.secondsRadius());
-		seconds.setAttribute("y2", this.secondsRadius());
+		seconds.setAttribute("x1", this._radius);
+		seconds.setAttribute("y1", this.radius() - this.secondsRadius() * 0.9);
+		seconds.setAttribute("x2", this._radius);
+		seconds.setAttribute("y2", this._radius);
 		this.element.appendChild(seconds);
-		this.secondsHand = new ClockHand(seconds, this.secondsRadius(), this.secondsRadius() * 0.1);
+		this.secondsHand = new ClockHand(seconds, this.radius(), this.radius() - this.secondsRadius() * 0.9);
 		this.secondsHand._transitions = this._transitions;
 	}
 
@@ -460,11 +519,11 @@ Clock.prototype.drawTicks = function(n, length, cl, radius) {
 		if (cl) {
 			line.classList.add(cl);
 		}
-		line.setAttribute("x1", radius);
-		line.setAttribute("y1", 0);
-		line.setAttribute("x2", radius);
-		line.setAttribute("y2", radius * length);
-		line.setAttribute("transform", "rotate(" + i + ", " + radius + ", " + radius + ")");
+		line.setAttribute("x1", this._radius);
+		line.setAttribute("y1", this._radius - radius);
+		line.setAttribute("x2", this._radius);
+		line.setAttribute("y2", (this._radius - radius) + radius*length);
+		line.setAttribute("transform", "rotate(" + i + ", " + this._radius + ", " + this._radius + ")");
 
 		g.appendChild(line);
 	}
@@ -474,7 +533,11 @@ Clock.prototype.drawTicks = function(n, length, cl, radius) {
 	return this;
 };
 
-Clock.prototype.drawNumbers = function(numbers, distance, cl, radius) {
+Clock.prototype.drawNumbers = function(numbers, cl, radius, rotateDigits) {
+	if (rotateDigits === undefined) {
+		rotateDigits = this._rotateDigits;
+	}
+
 	var degrees = 360 / numbers.length;
 
 	var g = document.createElementNS(this.svgNS, "g");
@@ -490,19 +553,20 @@ Clock.prototype.drawNumbers = function(numbers, distance, cl, radius) {
 		if (cl) {
 			outerWrapper.classList.add(cl);
 		}
-		outerWrapper.setAttribute("transform", "rotate(" + i + ", " + radius + ", " + radius + ")");
+		outerWrapper.setAttribute("transform", "rotate(" + i + ", " + this._radius + ", " + this._radius + ")");
 
 		var innerWrapper = document.createElementNS(this.svgNS, "g");
 
-		innerWrapper.setAttribute("transform", "translate(" + radius + ", " + (radius * distance) + ")");
+		innerWrapper.setAttribute("transform", "translate(" + this._radius + ", 0)");
 		
 		var text = document.createElementNS(this.svgNS, "text");
 		text.textContent = numbers[n];
-		if (!this._rotateDigits) {
-			text.setAttribute("transform", "rotate(-" + i + ")");
+		if (!rotateDigits) {
+			text.setAttribute("transform", "translate(0, " + (this._radius - radius * 0.9) + ") rotate(-" + i + ")");
 			text.setAttribute("dominant-baseline", "central");
 		} else {
-			text.setAttribute("transform", "translate(0, " + (radius * 0.05) + ")");
+			text.setAttribute("transform", "translate(0, " + (this._radius - radius) + ")");
+			text.setAttribute("dominant-baseline", "text-before-edge");
 		}
 		text.style.textAnchor = "middle";
 		
@@ -527,11 +591,11 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 	}
 
 	var hours = (sexagesimalSeconds / 3600) % 24;
-	var minutes = (sexagesimalSeconds / 60) % 60;
+	var minutes = (sexagesimalSeconds / 60) % 120;
 
 	if (this.lastTick != sexagesimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (hours % 12) / 12 * 360;
+			var hoursAngle = (hours % 24) / 12 * 360;
 			this.hoursHand.advanceTo(hoursAngle);
 		}
 
@@ -541,7 +605,7 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 		}
 
 		if (this.secondsHand) {
-			var secondsAngle = (sexagesimalSeconds % 60) / 60 * 360;
+			var secondsAngle = (sexagesimalSeconds % 120) / 60 * 360;
 			this.secondsHand.advanceTo(secondsAngle);
 		}
 
@@ -579,17 +643,17 @@ Clock.prototype.adjustHands24 = function(time) {
 
 	if (this.lastTick != sexagesimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (hours % 24) / 24 * 360;
+			var hoursAngle = (hours % 48) / 24 * 360;
 			this.hoursHand.advanceTo(hoursAngle);
 		}
 
 		if (this.minutesHand) {
-			var minutesAngle = (minutes % 60) / 60 * 360;
+			var minutesAngle = (minutes % 120) / 60 * 360;
 			this.minutesHand.advanceTo(minutesAngle);
 		}
 
 		if (this.secondsHand) {
-			var secondsAngle = (sexagesimalSeconds % 60) / 60 * 360;
+			var secondsAngle = (sexagesimalSeconds % 120) / 60 * 360;
 			this.secondsHand.advanceTo(secondsAngle);
 		}
 
@@ -640,17 +704,17 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 
 	if (this.lastTick != decimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (decimalHours % 10) / 10 * 360;;
+			var hoursAngle = (decimalHours % 20) / 10 * 360;;
 			this.hoursHand.advanceTo(hoursAngle);
 		}
 
 		if (this.minutesHand) {
-			var minutesAngle = (decimalMinutes % 100) / 100 * 360;
+			var minutesAngle = (decimalMinutes % 200) / 100 * 360;
 			this.minutesHand.advanceTo(minutesAngle);
 		}
 
 		if (this.secondsHand) {
-			var secondsAngle = (decimalSeconds % 100) / 100 * 360;
+			var secondsAngle = (decimalSeconds % 200) / 100 * 360;
 
 			if (!this._smooth) {
 				// Round angle so the hand moves at one decimal second
@@ -700,12 +764,12 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 
 	if (this.lastTick != hexadecimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (hexadecimalHours % 16) / 16 * 360;;
+			var hoursAngle = (hexadecimalHours % 32) / 16 * 360;;
 			this.hoursHand.advanceTo(hoursAngle);
 		}
 
 		if (this.minutesHand) {
-			var minutesAngle = (hexadecimalMaximes % 16) / 16 * 360;
+			var minutesAngle = (hexadecimalMaximes % 32) / 16 * 360;
 			this.minutesHand.advanceTo(minutesAngle);
 		}
 
@@ -714,7 +778,7 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 			// the hand once every hexadecimal second. So the tick length
 			// stays useful, but the hand position also shows something
 			// more useful than just the 16 seconds in a minute.
-			var secondsAngle = (hexadecimalMinutes % 16) / 16 * 360;
+			var secondsAngle = (hexadecimalMinutes % 32) / 16 * 360;
 
 			if (!this._smooth) {
 				// Round angle so the hand moves at one second
