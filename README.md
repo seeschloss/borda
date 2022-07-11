@@ -53,6 +53,9 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dt>.offset(int)</dt>
   <dd>Time offset to use from UTC, in seconds. Default is browser's timezone.</dd>
 
+  <dt>.longitude(float)</dt>
+  <dd>Longitude of location, use with <code>.offset(0)</code> in order to display Local Mean Time, or use together with an offset to use a reference meridian other than Greenwich. Default is <code>0</code> (Greenwich).</dd>
+
   <dt>.radius(int)</dt>
   <dd>Radius of the clock face, in pixels (default <code>50</code>).</dd>
 

@@ -209,7 +209,8 @@ var Clock = function(element) {
 
 	this.base("sexagesimal");
 	this._radius = 50;
-	this._offset = -1 * (new Date()).getTimezoneOffset() * 60;
+	this._offset = null;
+	this._longitude = null;
 
 	this.showHoursHand = true;
 	this.showHoursTicks = true;
@@ -232,6 +233,12 @@ var Clock = function(element) {
 Clock.prototype.offset = function(_) {
 	if (!arguments.length) return this._offset;
 	this._offset = +_;
+	return this;
+};
+
+Clock.prototype.longitude = function(_) {
+	if (!arguments.length) return this._longitude;
+	this._longitude = +_;
 	return this;
 };
 
@@ -581,8 +588,19 @@ Clock.prototype.drawNumbers = function(numbers, cl, radius, rotateDigits) {
 };
 
 Clock.prototype.adjustHandsSexagesimal = function(time) {
+	var offset = this._offset;
+	if (offset === null) {
+		offset = -1 * (new Date()).getTimezoneOffset() * 60;
+	}
+
+	var longitude = this._longitude;
+	if (longitude === null) {
+		longitude = 0;
+	}
+
 	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ this._offset;
+		+ offset
+		+ (longitude * 4 * 60);
 
 	if (!this._smooth) {
 		sexagesimalSeconds = Math.floor(sexagesimalSeconds);
@@ -629,8 +647,19 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 };
 
 Clock.prototype.adjustHands24 = function(time) {
+	var offset = this._offset;
+	if (offset === null) {
+		offset = -1 * (new Date()).getTimezoneOffset() * 60;
+	}
+
+	var longitude = this._longitude;
+	if (longitude === null) {
+		longitude = 0;
+	}
+
 	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ this._offset;
+		+ offset;
+		+ (longitude * 4 * 60);
 
 	if (!this._smooth) {
 		sexagesimalSeconds = Math.floor(sexagesimalSeconds);
@@ -677,11 +706,7 @@ Clock.prototype.adjustHands24 = function(time) {
 };
 
 Clock.prototype.adjustHandsDecimal = function(time) {
-	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ 560.921;
-		// Paris meridian is exactly 9 minutes and 20.921
-		// seconds east of Greenwich, which is the reference
-		// for Unix time returned by time.getTime()
+	var sexagesimalSeconds = (time.getTime() / 1000);
 	
 	// Taking milliseconds into account is absolutely necessary
 	// here, as decimal seconds are slightly shorter than sexagesimal
@@ -695,6 +720,23 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 	// not affected by time zones, it only has standard time which is
 	// supposed to be used around the world. Hypothetical time zones
 	// would have to be different from the current 24 timezones anyway.
+	var offset = this._offset;
+	if (offset !== null) {
+		sexagesimalSeconds += offset;
+	}
+
+	var longitude = this._longitude;
+	if (longitude === null) {
+		longitude = 2.231003;
+		// We use Paris meridian as the default time here.
+		// Paris' observatory is 2.231003 degrees east
+		// of Greenwich, which is the reference
+		// for Unix time returned by time.getTime() and
+		// one degree of longitude equals 4 sexagesimal
+		// minutes, or 240 seconds.
+	}
+
+	sexagesimalSeconds += longitude * 4 * 60;
 
 	var decimalDay = (sexagesimalSeconds / (3600 * 24))
 
@@ -748,8 +790,19 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 };
 
 Clock.prototype.adjustHandsHexadecimal = function(time) {
+	var offset = this._offset;
+	if (offset === null) {
+		offset = -1 * (new Date()).getTimezoneOffset() * 60;
+	}
+
+	var longitude = this._longitude;
+	if (longitude === null) {
+		longitude = 0;
+	}
+
 	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ this._offset;
+		+ offset;
+		+ (longitude * 4 * 60);
 
 	// Taking milliseconds into account is absolutely necessary
 	// here, as hexadecimal seconds are longer than sexagesimal
