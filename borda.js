@@ -211,6 +211,7 @@ var Clock = function(element) {
 	this._radius = 50;
 	this._offset = null;
 	this._longitude = null;
+	this.useTrueSolarTime = false;
 
 	this.showHoursHand = true;
 	this.showHoursTicks = true;
@@ -598,9 +599,13 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 		longitude = 0;
 	}
 
-	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ offset
-		+ (longitude * 4 * 60);
+	if (this.useTrueSolarTime) {
+		var sexagesimalSeconds = this.trueSolarTime(time, longitude) * 3600 * 24;
+	} else {
+		var sexagesimalSeconds = (time.getTime() / 1000)
+			+ offset
+			- (longitude * 4 * 60);
+	}
 
 	if (!this._smooth) {
 		sexagesimalSeconds = Math.floor(sexagesimalSeconds);
@@ -657,9 +662,13 @@ Clock.prototype.adjustHands24 = function(time) {
 		longitude = 0;
 	}
 
-	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ offset;
-		+ (longitude * 4 * 60);
+	if (this.useTrueSolarTime) {
+		var sexagesimalSeconds = this.trueSolarTime(time, longitude) * 3600 * 24;
+	} else {
+		var sexagesimalSeconds = (time.getTime() / 1000)
+			+ offset
+			- (longitude * 4 * 60);
+	}
 
 	if (!this._smooth) {
 		sexagesimalSeconds = Math.floor(sexagesimalSeconds);
@@ -715,11 +724,6 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 	// of eight ticks or so (a decimal second is ~0.8 sexagesimal
 	// seconds).
 	
-	// Clock offset is not taken into account here, because it
-	// doesn't make sense to use it as decimal time is fundamentally
-	// not affected by time zones, it only has standard time which is
-	// supposed to be used around the world. Hypothetical time zones
-	// would have to be different from the current 24 timezones anyway.
 	var offset = this._offset;
 	if (offset !== null) {
 		sexagesimalSeconds += offset;
@@ -736,9 +740,13 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 		// minutes, or 240 seconds.
 	}
 
-	sexagesimalSeconds += longitude * 4 * 60;
+	sexagesimalSeconds -= longitude * 4 * 60;
 
-	var decimalDay = (sexagesimalSeconds / (3600 * 24))
+	if (this.useTrueSolarTime) {
+		var decimalDay = this.trueSolarTime(time, longitude);
+	} else {
+		var decimalDay = (sexagesimalSeconds / (3600 * 24)) % 1;
+	}
 
 	var decimalHours = decimalDay * 10;
 	var decimalMinutes = (decimalHours - Math.floor(decimalHours)) * 100;
@@ -800,9 +808,13 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 		longitude = 0;
 	}
 
-	var sexagesimalSeconds = (time.getTime() / 1000)
-		+ offset;
-		+ (longitude * 4 * 60);
+	if (this.useTrueSolarTime) {
+		var sexagesimalSeconds = this.trueSolarTime(time, longitude) * 3600 * 24;
+	} else {
+		var sexagesimalSeconds = (time.getTime() / 1000)
+			+ offset
+			- (longitude * 4 * 60);
+	}
 
 	// Taking milliseconds into account is absolutely necessary
 	// here, as hexadecimal seconds are longer than sexagesimal
@@ -920,5 +932,27 @@ Clock.prototype.display = function(date) {
 	this.adjustHands(date);
 
 	return this;
+};
+
+Clock.prototype.trueSolarTime = function(time, longitude) {
+	// Returns true solar time as fraction of a day (between 0 and 1)
+	// Calculations courtesy of Yvon Massé (http://gnomonique.fr)
+
+	var jl = new Date("2020-03-22T00:59:02Z"); // Jour de référence pour la longitude moyenne
+	var at = 365.242187;                       // Durée de l'année tropique [j]
+	var jm = new Date("2020-01-04T04:48:00Z"); // Jour de référence pour l'anomalie moyenne
+	var am = 365.259636;                       // Durée de l'année anomalistique [j]
+	var ex = 0.0167;                           // Excentricité de l'orbite de la Terre
+	var ob = 0.409;                            // Obliquité de l'écliptique [rad]
+	var mj = 24*60*60*1000;                    // Nombre de ms par jour
+
+	var M = 2*Math.PI*(time.getTime() - jm.getTime())/mj/am;    // Anomalie moyenne [rad]
+	var L = 2*Math.PI*(time.getTime() - jl.getTime())/mj/at;    // Longitude moyenne [rad]
+	var S = L + 2*ex*Math.sin(M) + 1.25*ex*ex*Math.sin(2*M);    // Longitude vraie [rad]
+	var Ad = Math.atan2(Math.cos(ob)*Math.sin(S), Math.cos(S)); // Ascension droite [rad]
+
+	var js = (time.getTime()/mj + (L-Ad)/2/Math.PI - longitude/360)%1;
+	if (js < 0) js += 1;
+	return js;
 };
 

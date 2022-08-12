@@ -56,6 +56,9 @@ The main goal of this library is to provide a usable widget for accurately calcu
   <dt>.longitude(float)</dt>
   <dd>Longitude of location, use with <code>.offset(0)</code> in order to display Local Mean Time, or use together with an offset to use a reference meridian other than Greenwich. Default is <code>0</code> (Greenwich).</dd>
 
+  <dt>.useTrueSolarTime(bool)</dt>
+  <dd>Use <a href="https://en.wikipedia.org/wiki/Solar_time#Apparent_solar_time">true solar time</a> at <code>longitude</code> rather than Local Mean Time. Does not make much sense to use with <code>offset</code>, but should work. Default is <code>false</code>.</dd>
+
   <dt>.radius(int)</dt>
   <dd>Radius of the clock face, in pixels (default <code>50</code>).</dd>
 
