@@ -272,7 +272,7 @@ var Clock = function(element) {
 	this.showHoursTicks = true;
 	this.showHoursDigits = true;
 
-	this.showMinutesHand = false;
+	this.showMinutesHand = true;
 	this.showMinutesTicks = false;
 	this.showMinutesDigits = false;
 
@@ -546,16 +546,19 @@ Clock.prototype.draw = function() {
 	this.hoursHand = new ClockHand(hours, this.radius(), this.radius() - hoursHandRadius);
 	this.hoursHand._transitions = this._transitions;
 
-	var minutes = document.createElementNS(this.svgNS, "line");
-	minutes.classList.add("minutes");
-	minutes.classList.add("hand");
-	minutes.setAttribute("x1", this._radius);
-	minutes.setAttribute("y1", this.radius() - this.minutesRadius() * 0.9);
-	minutes.setAttribute("x2", this._radius);
-	minutes.setAttribute("y2", this._radius);
-	this.element.appendChild(minutes);
-	this.minutesHand = new ClockHand(minutes, this.radius(), this.radius() - this.minutesRadius() * 0.9);
-	this.minutesHand._transitions = this._transitions;
+	if (this.showMinutesHand) {
+		var minutes = document.createElementNS(this.svgNS, "line");
+		minutes.classList.add("minutes");
+		minutes.classList.add("hand");
+		minutes.setAttribute("x1", this._radius);
+		minutes.setAttribute("y1", this.radius() - this.minutesRadius() * 0.9);
+		minutes.setAttribute("x2", this._radius);
+		minutes.setAttribute("y2", this._radius);
+		this.element.appendChild(minutes);
+
+		this.minutesHand = new ClockHand(minutes, this.radius(), this.radius() - this.minutesRadius() * 0.9);
+		this.minutesHand._transitions = this._transitions;
+	}
 
 	if (this.showSecondsHand) {
 		var seconds = document.createElementNS(this.svgNS, "line");
@@ -685,12 +688,12 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 			this.hoursHand.rotateTo(hoursAngle, clockwise);
 		}
 
-		if (this.minutesHand) {
+		if (this.showMinutesHand && this.minutesHand) {
 			var minutesAngle = (minutes) / 60 * 360;
 			this.minutesHand.rotateTo(minutesAngle, clockwise);
 		}
 
-		if (this.secondsHand) {
+		if (this.showSecondsHand && this.secondsHand) {
 			var secondsAngle = (sexagesimalSeconds % 60) / 60 * 360;
 			this.secondsHand.rotateTo(secondsAngle, clockwise);
 		}
