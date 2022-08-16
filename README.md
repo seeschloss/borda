@@ -1,9 +1,15 @@
 # Borda #
-Borda is a JavaScript class for drawing animated SVG clocks, with enough parameters
-to allow customising the look of the clock while trying not to get in the way of
-CSS styling.
+Borda is a JavaScript class for drawing animated SVG clock faces, clock hands,
+with enough parameters to allow customising the look of the clock while trying
+not to get in the way of CSS styling.
 
 The main goal of this library is to provide a usable widget for accurately calculating and displaying [French revolutionary decimal time](https://en.wikipedia.org/wiki/Decimal_time#France) hence the name [Borda](https://en.wikipedia.org/wiki/Jean-Charles_de_Borda), who is the man responsible for proposing this scheme (among other works on decimalisation of units) to the Convention where it was subsequently legally adopted on [5 October 1793](http://gallica.bnf.fr/ark:/12148/bpt6k9736905c/f465.item). It was however never widely used and was eventually abandoned in favour of the customary sexagesimal time.
+
+Borda also supports a variety of "exotic" clock types in addition to decimal clocks,
+including [hexadecimal](https://en.wikipedia.org/wiki/Hexadecimal_time) and
+[24-hour](https://en.wikipedia.org/wiki/24-hour_clock) clocks as well as more fancy clocks
+with rotary dials, mean solar time and true solar time computation at a given longitude,
+and hopefully any other feature that could remotely be useful to display time on a clock face.
 
 ## Usage ##
 
@@ -123,7 +129,7 @@ new Clock(element)
   .secondsHand(false)
   .draw().start();
 ```
-![](https://down.xn--wda.fr/2016-10-18/3JXFSnZ7wt.png)
+![](.README-resources/clock-sexagesimal.png)
 
 ### French revolutionary clock ###
 ```javascript
@@ -133,4 +139,28 @@ new Clock(element)
   .minutesDigits(true)
   .draw().start();
 ```
-![](https://down.xn--wda.fr/2016-10-18/4YkCwt01nK.png)
+![](.README-resources/clock-decimal.png)
+
+### Hexadecimal clock ###
+```javascript
+new Clock(element)
+  .base("hexadecimal")
+  .minutesTicks(true)
+  .minutesDigits(true)
+  .draw().start();
+```
+![](.README-resources/clock-hexadecimal.png)
+
+### 24-hour clock ###
+```javascript
+new Clock(element)
+  .base("24")
+  .draw().start();
+```
+![](.README-resources/clock-24.png)
+
+### Rotary clock ###
+Lookup the source of [this demo page](https://ssz.fr/borda/rotary.html) as this involves more than a few lines of code.
+
+![](.README-resources/clock-rotary.png)
+
