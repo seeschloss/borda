@@ -156,7 +156,15 @@ ClockHand.prototype.setAngle = function(degrees) {
 	}
 };
 
-ClockHand.prototype.advanceTo = function(degrees) {
+ClockHand.prototype.rotateTo = function(degrees, clockwise) {
+	if (clockwise === undefined || clockwise == true) {
+		return this.rotateClockwiseTo(degrees);
+	} else {
+		return this.rotateCounterClockwiseTo(degrees);
+	}
+}
+
+ClockHand.prototype.rotateClockwiseTo = function(degrees) {
 	if (degrees != this._currentDegrees) {
 		var difference = ((degrees+360) - this._currentDegrees) % 360;
 		// We need the real absolute difference in degrees, to allow
@@ -189,6 +197,53 @@ ClockHand.prototype.advanceTo = function(degrees) {
 				that.setAngle(currentAngle);
 
 				if (currentAngle < (that._currentDegrees + difference)) {
+					window.requestAnimationFrame(advanceOneStep);
+				} else {
+					that.setAngle(degrees);
+					that._currentDegrees = degrees;
+					that.moving = false;
+				}
+			};
+			window.requestAnimationFrame(advanceOneStep);
+		}
+	}
+
+	return this;
+};
+
+ClockHand.prototype.rotateCounterClockwiseTo = function(degrees) {
+	if (degrees != this._currentDegrees) {
+		var difference = ((this._currentDegrees+360) - degrees) % 360;
+		// We need the real absolute difference in degrees, to allow
+		// smooth movement even when going from 355° to 5°
+
+		if (!this._transitions || this._currentDegrees === undefined || difference < 1) {
+			// No need to do things smoothly if the angle is so small
+			this.setAngle(degrees);
+			this._currentDegrees = degrees;
+		} else if (!this.moving) {
+			var duration = 70; // milliseconds
+			var ticks = 5;
+			var tickLength = duration/ticks;
+			var stepAngle = difference/ticks;
+
+			var that = this;
+			var currentAngle = this._currentDegrees;
+
+			this.moving = true;
+
+			var start = undefined;
+			var advanceOneStep = function(timestamp) {
+				if (start === undefined) {
+					start = timestamp;
+				}
+
+				var progress = (timestamp - start) / duration;
+				currentAngle -= (stepAngle * progress);
+
+				that.setAngle(currentAngle);
+
+				if (currentAngle > (that._currentDegrees - difference)) {
 					window.requestAnimationFrame(advanceOneStep);
 				} else {
 					that.setAngle(degrees);
@@ -619,23 +674,25 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 		// at one second intervals instead of continously.
 	}
 
-	var hours = (sexagesimalSeconds / 3600) % 24;
-	var minutes = (sexagesimalSeconds / 60) % 120;
+	var hours = (sexagesimalSeconds / 3600) % 12;
+	var minutes = (sexagesimalSeconds / 60) % 60;
 
 	if (this.lastTick != sexagesimalSeconds || this._smooth) {
+		var clockwise = sexagesimalSeconds > this.lastTick;
+
 		if (this.hoursHand) {
 			var hoursAngle = (hours % 24) / 12 * 360;
-			this.hoursHand.advanceTo(hoursAngle);
+			this.hoursHand.rotateTo(hoursAngle, clockwise);
 		}
 
 		if (this.minutesHand) {
 			var minutesAngle = (minutes) / 60 * 360;
-			this.minutesHand.advanceTo(minutesAngle);
+			this.minutesHand.rotateTo(minutesAngle, clockwise);
 		}
 
 		if (this.secondsHand) {
-			var secondsAngle = (sexagesimalSeconds % 120) / 60 * 360;
-			this.secondsHand.advanceTo(secondsAngle);
+			var secondsAngle = (sexagesimalSeconds % 60) / 60 * 360;
+			this.secondsHand.rotateTo(secondsAngle, clockwise);
 		}
 
 		if (this.lastTick != Math.floor(sexagesimalSeconds)) {
@@ -687,18 +744,18 @@ Clock.prototype.adjustHands24 = function(time) {
 
 	if (this.lastTick != sexagesimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (hours % 48) / 24 * 360;
-			this.hoursHand.advanceTo(hoursAngle);
+			var hoursAngle = (hours % 24) / 24 * 360;
+			this.hoursHand.rotateTo(hoursAngle);
 		}
 
 		if (this.minutesHand) {
-			var minutesAngle = (minutes % 120) / 60 * 360;
-			this.minutesHand.advanceTo(minutesAngle);
+			var minutesAngle = (minutes % 60) / 60 * 360;
+			this.minutesHand.rotateTo(minutesAngle);
 		}
 
 		if (this.secondsHand) {
-			var secondsAngle = (sexagesimalSeconds % 120) / 60 * 360;
-			this.secondsHand.advanceTo(secondsAngle);
+			var secondsAngle = (sexagesimalSeconds % 60) / 60 * 360;
+			this.secondsHand.rotateTo(secondsAngle);
 		}
 
 		if (this.lastTick != Math.floor(sexagesimalSeconds)) {
@@ -760,17 +817,17 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 
 	if (this.lastTick != decimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (decimalHours % 20) / 10 * 360;;
-			this.hoursHand.advanceTo(hoursAngle);
+			var hoursAngle = (decimalHours % 10) / 10 * 360;;
+			this.hoursHand.rotateTo(hoursAngle);
 		}
 
 		if (this.minutesHand) {
-			var minutesAngle = (decimalMinutes % 200) / 100 * 360;
-			this.minutesHand.advanceTo(minutesAngle);
+			var minutesAngle = (decimalMinutes % 100) / 100 * 360;
+			this.minutesHand.rotateTo(minutesAngle);
 		}
 
 		if (this.secondsHand) {
-			var secondsAngle = (decimalSeconds % 200) / 100 * 360;
+			var secondsAngle = (decimalSeconds % 100) / 100 * 360;
 
 			if (!this._smooth) {
 				// Round angle so the hand moves at one decimal second
@@ -779,7 +836,7 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 				// jitter.
 				secondsAngle = Math.floor(secondsAngle / 3.6) * 3.6;
 			}
-			this.secondsHand.advanceTo(secondsAngle);
+			this.secondsHand.rotateTo(secondsAngle);
 		}
 
 		if (this.lastTick != Math.floor(decimalSeconds)) {
@@ -835,13 +892,13 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 
 	if (this.lastTick != hexadecimalSeconds || this._smooth) {
 		if (this.hoursHand) {
-			var hoursAngle = (hexadecimalHours % 32) / 16 * 360;;
-			this.hoursHand.advanceTo(hoursAngle);
+			var hoursAngle = (hexadecimalHours % 16) / 16 * 360;;
+			this.hoursHand.rotateTo(hoursAngle);
 		}
 
 		if (this.minutesHand) {
-			var minutesAngle = (hexadecimalMaximes % 32) / 16 * 360;
-			this.minutesHand.advanceTo(minutesAngle);
+			var minutesAngle = (hexadecimalMaximes % 16) / 16 * 360;
+			this.minutesHand.rotateTo(minutesAngle);
 		}
 
 		if (this.secondsHand) {
@@ -849,7 +906,7 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 			// the hand once every hexadecimal second. So the tick length
 			// stays useful, but the hand position also shows something
 			// more useful than just the 16 seconds in a minute.
-			var secondsAngle = (hexadecimalMinutes % 32) / 16 * 360;
+			var secondsAngle = (hexadecimalMinutes % 16) / 16 * 360;
 
 			if (!this._smooth) {
 				// Round angle so the hand moves at one second
@@ -858,7 +915,7 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 				// jitter.
 				secondsAngle = Math.floor(secondsAngle / 1.40625) * 1.40625;
 			}
-			this.secondsHand.advanceTo(secondsAngle);
+			this.secondsHand.rotateTo(secondsAngle);
 		}
 
 		if (this.lastTick != Math.floor(hexadecimalSeconds)) {
