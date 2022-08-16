@@ -211,7 +211,7 @@ var Clock = function(element) {
 	this._radius = 50;
 	this._offset = null;
 	this._longitude = null;
-	this.useTrueSolarTime = false;
+	this._useTrueSolarTime = false;
 
 	this.showHoursHand = true;
 	this.showHoursTicks = true;
@@ -240,6 +240,12 @@ Clock.prototype.offset = function(_) {
 Clock.prototype.longitude = function(_) {
 	if (!arguments.length) return this._longitude;
 	this._longitude = +_;
+	return this;
+};
+
+Clock.prototype.useTrueSolarTime = function(_) {
+	if (!arguments.length) return this._useTrueSolarTime;
+	this._useTrueSolarTime = +_;
 	return this;
 };
 
@@ -599,12 +605,12 @@ Clock.prototype.adjustHandsSexagesimal = function(time) {
 		longitude = 0;
 	}
 
-	if (this.useTrueSolarTime) {
+	if (this._useTrueSolarTime) {
 		var sexagesimalSeconds = this.trueSolarTime(time, longitude) * 3600 * 24;
 	} else {
 		var sexagesimalSeconds = (time.getTime() / 1000)
 			+ offset
-			- (longitude * 4 * 60);
+			+ (longitude * 4 * 60);
 	}
 
 	if (!this._smooth) {
@@ -662,12 +668,12 @@ Clock.prototype.adjustHands24 = function(time) {
 		longitude = 0;
 	}
 
-	if (this.useTrueSolarTime) {
+	if (this._useTrueSolarTime) {
 		var sexagesimalSeconds = this.trueSolarTime(time, longitude) * 3600 * 24;
 	} else {
 		var sexagesimalSeconds = (time.getTime() / 1000)
 			+ offset
-			- (longitude * 4 * 60);
+			+ (longitude * 4 * 60);
 	}
 
 	if (!this._smooth) {
@@ -740,9 +746,9 @@ Clock.prototype.adjustHandsDecimal = function(time) {
 		// minutes, or 240 seconds.
 	}
 
-	sexagesimalSeconds -= longitude * 4 * 60;
+	sexagesimalSeconds += longitude * 4 * 60;
 
-	if (this.useTrueSolarTime) {
+	if (this._useTrueSolarTime) {
 		var decimalDay = this.trueSolarTime(time, longitude);
 	} else {
 		var decimalDay = (sexagesimalSeconds / (3600 * 24)) % 1;
@@ -808,12 +814,12 @@ Clock.prototype.adjustHandsHexadecimal = function(time) {
 		longitude = 0;
 	}
 
-	if (this.useTrueSolarTime) {
+	if (this._useTrueSolarTime) {
 		var sexagesimalSeconds = this.trueSolarTime(time, longitude) * 3600 * 24;
 	} else {
 		var sexagesimalSeconds = (time.getTime() / 1000)
 			+ offset
-			- (longitude * 4 * 60);
+			+ (longitude * 4 * 60);
 	}
 
 	// Taking milliseconds into account is absolutely necessary
@@ -951,7 +957,7 @@ Clock.prototype.trueSolarTime = function(time, longitude) {
 	var S = L + 2*ex*Math.sin(M) + 1.25*ex*ex*Math.sin(2*M);    // Longitude vraie [rad]
 	var Ad = Math.atan2(Math.cos(ob)*Math.sin(S), Math.cos(S)); // Ascension droite [rad]
 
-	var js = (time.getTime()/mj + (L-Ad)/2/Math.PI - longitude/360)%1;
+	var js = (time.getTime()/mj + (L-Ad)/2/Math.PI + longitude/360)%1;
 	if (js < 0) js += 1;
 	return js;
 };
